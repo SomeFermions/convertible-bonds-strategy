@@ -1,0 +1,5 @@
+tables:
+  live_5m: cb_intraday_factor_demo_live
+  watchlist_daily: cb_intraday_factor_demo_watchlist
+  factor_snapshot: cb_intraday_factor_demo_snapshot
+  alert_table: cb_intraday_factor_demo_alerts

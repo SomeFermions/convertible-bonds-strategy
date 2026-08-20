@@ -1,0 +1,161 @@
+strategy:
+  version: dynamic_response_v080
+  factor_version: response_surface_v080
+  config_version: dynamic_response_v080_001
+  research_only: true
+  production_alert_integration: false
+  output_dir: outputs/research/dynamic_response_v080
+  random_seed: 2026080
+  n_jobs: 16
+
+data:
+  source_feature_cache: outputs/research/diagnostic_linkage_v071/linkage_features_ridge.pkl
+  source_bar_cache: outputs/research/diagnostic_linkage_v071/common_slice_bars.pkl
+  source_sample_version: jq_cb_train_v1
+  bars_per_day: 48
+  maximum_bar_slot: 47
+  reset_at_lunch: true
+  reset_overnight: true
+  require_pair_quality: true
+  universe_bias_flag: FUTURE_SELECTED_TRAINING_SAMPLE_SOURCE
+  fundamental_pit_status: UNAVAILABLE_FOR_HISTORICAL_RECONSTRUCTION
+  cache_dataset: true
+  dataset_cache: cache/dynamic_response_dataset.parquet
+
+walk_forward:
+  purge_days: 1
+  warmup_train_days: 20
+  minimum_train_days: 20
+  maximum_future_horizon_bars: 12
+  expanding: true
+  windows:
+    - id: W1_TRAIN
+      start: "2025-06-16"
+      end: "2025-08-15"
+      role: train
+    - id: W2_VALIDATE
+      start: "2025-08-26"
+      end: "2025-11-04"
+      role: validation
+    - id: W3_TEST
+      start: "2025-11-13"
+      end: "2026-01-16"
+      role: test
+    - id: W4_HOLDOUT
+      start: "2026-01-27"
+      end: "2026-04-08"
+      role: final_holdout
+
+features:
+  include_bond_id_comparison: true
+  primary_model_uses_bond_id: false
+  same_bar_cb_return_forbidden: true
+  current_daily_aggregate_forbidden: true
+  include_contract_structure: true
+  include_v071_linkage_context: true
+  session_rolling_windows: [2, 3, 6, 12]
+  past_standardization_days: 20
+  minimum_past_standardization_observations: 48
+
+labels:
+  horizons_bars: [3, 6, 12]
+  significant_gap_closure_ratio: 0.5
+  minimum_gap_for_ratio_bps: 1.0
+  gap_close_ratio_clip: [-5.0, 5.0]
+  prevent_lunch_crossing: true
+  prevent_overnight_crossing: true
+
+surface_models:
+  enabled: [v071_linear, ridge, lightgbm, xgboost]
+  primary_response_model: lightgbm_q50
+  quantiles: [0.1, 0.5, 0.9]
+  early_stopping_days: 8
+  training_row_cap: 500000
+  validation_row_cap: 180000
+  tune_with_optuna: false
+  optuna_trials: 30
+  ridge:
+    alpha: 10.0
+  lightgbm:
+    objective: regression_l1
+    n_estimators: 700
+    learning_rate: 0.035
+    num_leaves: 31
+    max_depth: -1
+    min_child_samples: 120
+    subsample: 0.85
+    colsample_bytree: 0.80
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+  xgboost:
+    n_estimators: 700
+    learning_rate: 0.035
+    max_depth: 6
+    min_child_weight: 20.0
+    subsample: 0.85
+    colsample_bytree: 0.80
+    reg_alpha: 0.1
+    reg_lambda: 2.0
+    tree_method: hist
+
+hmm:
+  enabled: true
+  candidate_states: [3, 4, 5, 6]
+  covariance_types: [diag, full]
+  candidate_seeds: [2026080, 2026081, 2026082]
+  n_iter: 40
+  tolerance: 0.001
+  candidate_row_cap: 10000
+  training_row_cap: 40000
+  minimum_state_occupancy: 0.02
+  maximum_dominant_occupancy: 0.90
+  daily_reset: true
+  lunch_reset_comparison: true
+  default_lunch_reset: true
+  canonical_reference_fold: V080_WARMUP
+
+outcome_models:
+  models: [A_BASELINE, B_SURFACE, C_SURFACE_STATE]
+  continuous_estimator: ridge
+  classifier: logistic
+  ridge_alpha: 10.0
+  logistic_c: 0.5
+  training_row_cap: 500000
+
+costs:
+  scenarios:
+    gross:
+      half_spread_bps: 0.0
+      slippage_bps: 0.0
+      minimum_cost_floor_bps: 0.0
+      impact_bps: 0.0
+    conservative:
+      half_spread_bps: 3.0
+      slippage_bps: 5.0
+      minimum_cost_floor_bps: 8.0
+      impact_bps: 2.0
+    stress:
+      half_spread_bps: 6.0
+      slippage_bps: 10.0
+      minimum_cost_floor_bps: 15.0
+      impact_bps: 5.0
+
+evaluation:
+  official_validation_windows: [W2_VALIDATE, W3_TEST, W4_HOLDOUT]
+  response_gap_bins: 10
+  probability_bins: 10
+  bootstrap_iterations: 300
+  shap_sample_rows: 3000
+  ale_sample_rows: 20000
+  ale_bins: 12
+  minimum_ale_bin_rows: 50
+  ale_features:
+    - stock_idio_return_current
+    - premium_lag1
+    - stock_realized_vol_6bar
+    - relative_amount_lag1
+    - moneyness_current
+  surface_grid_bins: 10
+  plot_dpi: 130
+  minimum_bucket_rows: 100
+  minimum_official_folds_for_stage_gate: 3

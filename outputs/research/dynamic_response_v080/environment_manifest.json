@@ -1,0 +1,21 @@
+{
+  "python": "3.13.13 | packaged by conda-forge | (main, Apr  8 2026, 02:00:33) [GCC 14.3.0]",
+  "executable": "python",
+  "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+  "packages": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "scipy": "1.18.0",
+    "scikit-learn": "1.9.0",
+    "joblib": "1.5.3",
+    "pyarrow": "25.0.0",
+    "lightgbm": "4.7.0",
+    "xgboost": "3.4.0",
+    "hmmlearn": "0.3.3",
+    "shap": "0.52.0",
+    "optuna": "4.9.0",
+    "matplotlib": "3.11.1",
+    "seaborn": "0.13.2",
+    "PyYAML": "6.0.3"
+  }
+}

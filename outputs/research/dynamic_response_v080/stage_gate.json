@@ -1,0 +1,14 @@
+{
+  "decision": "C_NO_STABLE_INCREMENT",
+  "surface_winning_folds": 0,
+  "surface_compared_folds": 3,
+  "surface_pass": false,
+  "state_winning_comparisons": 2,
+  "state_compared_comparisons": 6,
+  "state_occupancy_pass": true,
+  "state_seed_stability_pass": false,
+  "minimum_valid_seed_count_per_fold": 1,
+  "state_semantic_stable_fraction": 0.6,
+  "state_semantic_stability_pass": false,
+  "state_pass": false
+}

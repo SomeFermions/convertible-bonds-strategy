@@ -1,0 +1,192 @@
+strategy:
+  version: hybrid_v07
+  config_version: hybrid_v07_pit_conversion_002
+  research_only: true
+  allow_overnight: true
+  allow_intraday: true
+  auto_order_enabled: false
+  output_dir: outputs/research/hybrid_v07
+  sample_version: jq_cb_train_v1
+  random_seed: 202607
+  n_jobs: -1
+  parallel_backend: loky
+  parallel_chunks_per_worker: 2
+
+point_in_time:
+  require_snapshot_on_or_before_trade_date: true
+  allow_future_static_snapshot: false
+  max_asof_age_days: 120
+  flag_survivorship_selected_universe: true
+
+bond_type:
+  enabled: true
+  version: bond_type_v07_001
+  exclude_clause_driven_from_lsmc: true
+  exclude_illiquid: true
+  distress_lsmc_mode: experimental
+  illiquid_adv20_amount: 10000000
+  illiquid_active_bar_ratio: 0.80
+  bond_like_price_max: 118
+  bond_like_elasticity_max: 0.30
+  equity_like_price_min: 150
+  equity_like_elasticity_min: 0.65
+  speculative_premium_min: 40
+  speculative_price_min: 180
+  distress_price_floor: 105
+  distress_reversal_20d_min: 0.12
+  high_confidence_required_fields: 5
+
+intraday:
+  enabled: true
+  min_net_edge_bps: 15
+  friction_safety_multiplier: 1.5
+  momentum_weight: 0.05
+  residual_weight: 0.25
+  liquidity_weight: 0.25
+  relative_value_weight: 0.25
+  flow_weight: 0.10
+  premium_risk_weight: 0.10
+  residual_entry_z: -0.80
+  repair_fraction: 0.50
+  min_execution_minutes: 30
+  loss_to_overnight_prohibition: true
+
+daily:
+  enabled: true
+  rebalance_frequency: daily
+  max_expected_holding_days: 10
+  use_lsmc: true
+  use_qiv_relative_value: true
+  use_mc_price_gap: true
+  max_positions: 10
+  min_hold_edge_bps: 0
+
+lsmc:
+  enabled: true
+  path_models:
+    - gbm
+    - empirical_bootstrap
+  simulation_paths: 5000
+  backtest_simulation_paths: 512
+  random_seed: 202607
+  regression_models:
+    - ridge
+    - huber
+    - ols
+  default_regression_model: ridge
+  ridge_alpha: 1.0
+  max_horizon_days: 10
+  minimum_history_days: 40
+  discount_rate_mode: risk_free_plus_credit_proxy
+  risk_free_rate: 0.018
+  credit_spread_sensitivity_bps:
+    - -200
+    - -100
+    - 0
+    - 100
+    - 200
+  model_uncertainty_buffer_bps: 20
+  overnight_risk_buffer_bps: 20
+  daily_rebalance_friction_bps: 10
+  carry_proxy_annual: 0.0
+  structural_weight: 0.50
+  empirical_weight: 0.50
+  basis_version: lsmc_basis_v07_001
+  model_version: lsmc_hybrid_v07_001
+
+credit_spread_proxy:
+  source: configured_bond_type_fundamental_liquidity_proxy
+  base_bps:
+    BALANCED_CORE: 250
+    EQUITY_LIKE: 300
+    BOND_LIKE: 220
+    SPECULATIVE_HIGH_PREMIUM: 500
+    DISTRESS_REVERSAL: 800
+    CLAUSE_DRIVEN: 600
+    ILLIQUID: 700
+  debt_ratio_penalty_bps: 150
+  negative_cash_flow_penalty_bps: 100
+  illiquidity_penalty_bps: 150
+  distress_penalty_bps: 300
+  proxy_uncertainty_bps: 200
+
+qiv:
+  enabled: true
+  use_raw: false
+  use_vwap: true
+  use_smooth: true
+  contamination_gate: true
+  cross_sectional_ranking: true
+  min_sigma: 0.01
+  max_sigma: 3.00
+  solve_tolerance: 0.0001
+  max_iterations: 80
+  smooth_span: 5
+  contamination_relative_amount_z: 2.5
+  contamination_premium_change_z: 2.0
+  contamination_range_z: 2.5
+  contamination_close_location_max: 0.25
+
+monte_carlo:
+  enabled: true
+  default_paths: 5000
+  random_seed: 202607
+  par_value: 100
+  redemption_value_proxy: 100
+  coupon_carry_proxy: 0.0
+  finite_difference_stock_pct: 0.01
+  finite_difference_vol: 0.01
+  model_version: mc_terminal_conversion_proxy_v07_001
+
+momentum:
+  standalone_trade_signal: false
+  monitoring_only: true
+  weight: 0.05
+
+ma_monitor:
+  ma90min_enabled: true
+  ma20d_enabled: true
+  standalone_trade_signal: false
+
+deprecated_factors:
+  factor_vol_response_gap_weight: 0.0
+  factor_vol_response_gap_research_compatibility_only: true
+
+friction:
+  actual_fee_bps_proxy: 1.0
+  stress_multiplier: 5.0
+  cost_bps_grid:
+    - 5
+    - 10
+    - 20
+    - 30
+  order_notional: 100000
+  sweet_spot_adv20_min: 30000000
+  sweet_spot_adv20_max: 1500000000
+  overheated_amount_z: 2.5
+  climax_range_z: 2.0
+  spread_range_fraction: 0.08
+  slippage_range_fraction: 0.05
+  impact_coefficient_bps: 12.0
+  liquidity_risk_max_bps: 40.0
+
+portfolio:
+  annualization_days: 252
+  intraday_capital_fraction: 0.35
+  daily_capital_fraction: 0.65
+  max_weight_per_bond: 0.15
+
+evaluation:
+  walk_forward: true
+  purging: true
+  embargo_days: 1
+  report_by_bond_type: true
+  report_by_horizon: true
+  report_cost_after_returns: true
+  minimum_train_days: 40
+  performance_start_after_days: 60
+  cost_bps_grid:
+    - 5
+    - 10
+    - 20
+    - 30

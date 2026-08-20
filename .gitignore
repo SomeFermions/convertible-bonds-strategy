@@ -1,0 +1,52 @@
+# Credentials and local environment
+config/jqdata_credentials.toml
+.wind_env
+.env
+.env.*
+!.env.example
+
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime logs and local state
+logs/
+*.log
+*.pid
+manual_trade_log*.csv
+!manual_trade_log_template.csv
+
+# Generated market data, features, models, and research artifacts
+outputs/**
+!outputs/research/
+!outputs/research/research_map_versions.csv
+!outputs/research/hybrid_v07/
+!outputs/research/hybrid_v07/hybrid_v07_report.md
+!outputs/research/diagnostic_linkage_v071/
+!outputs/research/diagnostic_linkage_v071/diagnostic_linkage_v071_report.md
+!outputs/research/dynamic_response_v080/
+!outputs/research/dynamic_response_v080/dynamic_response_v080_report.md
+!outputs/research/dynamic_response_v080/environment_manifest.json
+!outputs/research/dynamic_response_v080/stage_gate.json
+
+# Local agent and internship context
+.agents/
+.codex/
+CODEX.md
+current-task.md
+
+# Editor and operating-system files
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db

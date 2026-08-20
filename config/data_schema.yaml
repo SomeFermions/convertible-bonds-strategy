@@ -1,0 +1,54 @@
+tables:
+  live_5m: cb_watchlist_bar_5m_live
+  watchlist_daily: cb_watchlist_daily
+  factor_snapshot: cb_intraday_factor_snapshot
+  alert_table: cb_intraday_alerts
+  job_runs: cb_intraday_job_runs
+  live_backfill_diff: cb_intraday_live_backfill_diff
+  ml_event_dataset: cb_intraday_ml_event_dataset
+  ml_predictions: cb_intraday_ml_predictions
+  ml_experiments: cb_intraday_ml_experiments
+
+live_5m_fields:
+  row_timestamp: ts
+  bar_start: bar_start
+  trade_date: trade_date
+  asset_type: asset_type
+  watchlist_status: watchlist_status
+  pool_state: pool_state
+  instrument_code: instrument_code
+  instrument_name: instrument_name
+  bond_code: bond_code
+  bond_name: bond_name
+  stock_code: stock_code
+  stock_name: stock_name
+  open: open
+  high: high
+  low: low
+  close: close
+  volume: volume
+  amount: amount
+  premium_rate: premium_rate
+  conversion_price: conversion_price
+  ytm_available: ytm_available
+  ytm_source: ytm_source
+  turnover_available: turnover_available
+  turnover_source: turnover_source
+  premium_source: premium_source
+
+asset_type_values:
+  cb: CB
+  stock: STOCK
+
+watchlist_fields:
+  timestamp: ts
+  snapshot_id: snapshot_id
+  bond_code: bond_code
+  bond_name: bond_name
+  stock_code: stock_code
+  stock_name: stock_name
+  conversion_price: conversion_price
+  watchlist_status: watchlist_status
+  pool_state: pool_state
+  candidate_since: candidate_since
+  active_since: active_since

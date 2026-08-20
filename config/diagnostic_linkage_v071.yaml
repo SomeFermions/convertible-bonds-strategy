@@ -1,0 +1,202 @@
+strategy:
+  version: diagnostic_linkage_v071
+  factor_version: linkage_v071
+  config_version: diagnostic_linkage_v071_001
+  research_only: true
+  auto_order_enabled: false
+  output_dir: outputs/research/diagnostic_linkage_v071
+  sample_version: jq_cb_train_v1
+  random_seed: 2026071
+  n_jobs: -1
+
+common_slice:
+  required: true
+  bars_per_day: 48
+  minimum_valid_bars_per_asset: 46
+  require_all_benchmarks: true
+  require_conversion_price: true
+  require_daily_turnover: true
+  universe_source: canonical_daily_observable_pool
+  universe_bias_flag: FUTURE_SELECTED_TRAINING_SAMPLE_SOURCE
+  fundamental_pit_status: UNAVAILABLE_FOR_HISTORICAL_RECONSTRUCTION
+  windows:
+    - id: W1_TRAIN
+      start: "2025-06-16"
+      end: "2025-08-15"
+      role: train
+    - id: W2_VALIDATE
+      start: "2025-08-26"
+      end: "2025-11-04"
+      role: validation
+    - id: W3_TEST
+      start: "2025-11-13"
+      end: "2026-01-16"
+      role: test
+    - id: W4_HOLDOUT
+      start: "2026-01-27"
+      end: "2026-04-08"
+      role: final_holdout
+
+diagnostic:
+  run_cost_waterfall: true
+  run_matched_lsmc_tests: true
+  run_qiv_monotonicity_test: true
+  run_common_slice: true
+  qiv_mc_diagnostic_only: true
+  bond_type_hard_gate_default: false
+  bootstrap_iterations: 500
+
+linkage:
+  enabled: true
+  max_lag_bars: 3
+  rolling_windows_days: [20, 40, 60]
+  default_window_days: 40
+  default_model: ridge
+  alternative_models: [huber, ols]
+  ridge_alpha: 1.0
+  market_adjustment: true
+  benchmark_codes: [CSI300, CSI500, CSI1000, CHINEXT, STAR50]
+  actionable_lags: [1, 2, 3]
+  lag0_diagnostic_only: true
+  minimum_model_samples: 300
+  minimum_model_r2: 0.0
+  model_confidence_full_samples: 960
+  model_refit_frequency: daily
+  episode_merge_bars: 3
+
+stock_shock:
+  idiosyncratic_return_z_min: [0.5, 1.0, 1.5]
+  amount_z_min: [0.0, 0.5, 1.0]
+  default_return_z_min: 1.0
+  default_amount_z_min: 0.0
+  same_slot_lookback_days: 60
+  same_slot_min_days: 10
+
+linkage_gap:
+  minimum_gap_bps: [5, 10, 15, 20]
+  default_minimum_gap_bps: 10
+  require_repair_started: [false, true]
+  repair_positive_cb_idio_min_bps: 0
+
+liquidity:
+  require_sweet_spot: true
+  accepted_regimes: [NORMAL, LIQUIDITY_SWEET_SPOT]
+  reject_volume_climax: true
+  reject_hot_money_risk: true
+  illiquid_adv20_amount: 10000000
+  illiquid_active_bar_ratio: 0.80
+  relative_amount_sweet_min: 0.50
+  relative_amount_sweet_max: 2.00
+  hot_amount_z: 1.50
+  climax_amount_z: 2.50
+  climax_range_z: 1.50
+  premium_expansion_hot_z: 1.00
+  hot_money_reject_score: 0.65
+
+events:
+  intraday_trade_event_types: [STOCK_LEADS_CB_REPAIR]
+  watch_only_event_types:
+    - STOCK_LEADS_CB_NO_RESPONSE
+    - CB_OVERSHOOT_HOT_MONEY
+    - LINKAGE_UNCERTAIN
+  reverse_linkage_research_only: true
+  cb_leads_shock_z_min: 1.0
+
+exits:
+  fixed_stop_benchmark: true
+  fixed_horizon_bars: 3
+  fixed_benchmark_stop_vol_multiple: 1.5
+  hard_stop_vol_multiple: 2.0
+  hard_stop_floor_bps: 20
+  hard_stop_cap_bps: 80
+  linkage_repaired_thresholds: [0.7, 0.8, 1.0]
+  default_linkage_repaired_threshold: 0.8
+  use_stock_reversal_stop: true
+  stock_reversal_fraction: 0.50
+  use_linkage_failure_stop: true
+  linkage_failure_remaining_gap_fraction: 0.80
+  use_volume_climax_stop: true
+  use_response_half_life_time_stop: true
+  use_overshoot_exit: true
+  maximum_holding_bars: 6
+
+daily_rv:
+  enabled: true
+  top_n: [5, 10]
+  top_fraction: 0.20
+  holding_days: [1, 3, 5]
+  premium_weight: 0.45
+  residual_weight: 0.35
+  liquidity_weight: 0.20
+  qiv_weight: 0.0
+  mc_gap_weight: 0.0
+  momentum_weight: 0.0
+  exclude_obvious_hot_money: true
+  speculative_premium_threshold: 50.0
+  minimum_adv20_amount: 10000000
+
+qiv_mc:
+  formal_decision_weight: 0.0
+  diagnostic_only: true
+  quantile_bins: 5
+
+lsmc:
+  entry_enabled: false
+  exit_overlay_enabled: true
+  diagnostic_only: true
+  hold_edge_bins: 5
+  matched_bootstrap_iterations: 300
+  overlay_max_holding_days: 5
+  loss_to_overnight_prohibition: true
+
+costs:
+  order_notional: 100000
+  scenarios:
+    zero:
+      commission_bps: 0.0
+      spread_multiplier: 0.0
+      latency_multiplier: 0.0
+      impact_multiplier: 0.0
+      liquidity_multiplier: 0.0
+    realistic:
+      commission_bps: 1.0
+      spread_multiplier: 1.0
+      latency_multiplier: 1.0
+      impact_multiplier: 1.0
+      liquidity_multiplier: 1.0
+    conservative:
+      commission_bps: 2.0
+      spread_multiplier: 1.5
+      latency_multiplier: 1.5
+      impact_multiplier: 2.0
+      liquidity_multiplier: 1.5
+    disaster_5x:
+      commission_bps: 5.0
+      spread_multiplier: 5.0
+      latency_multiplier: 5.0
+      impact_multiplier: 5.0
+      liquidity_multiplier: 5.0
+  spread_range_fraction: 0.05
+  market_impact_coefficient_bps: 10.0
+  liquidity_penalty_max_bps: 30.0
+  latency_adverse_only: true
+  liquidity_regime_penalty_bps:
+    LIQUIDITY_SWEET_SPOT: 0.0
+    NORMAL: 1.5
+    HOT: 5.0
+    VOLUME_CLIMAX: 10.0
+    ILLIQUID: 30.0
+
+evaluation:
+  walk_forward: true
+  purging: true
+  embargo_bars: 3
+  embargo_days_daily: 1
+  block_bootstrap: true
+  bootstrap_block_unit: trade_date
+  report_by_bond_type: true
+  report_by_liquidity_regime: true
+  common_slice_required: true
+  entry_delay_bars: [0, 1, 2]
+  cost_scenarios: [zero, realistic, conservative, disaster_5x]
+  report_versions_on_every_output: true
